@@ -9,6 +9,9 @@ import { EntityManager, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { UserRole } from '../auth/enum/roles.enum';
+import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersRepository {
@@ -17,8 +20,28 @@ export class UsersRepository {
     private repository: Repository<User>,
   ) {}
 
-  async createAdmin(admin: CreateAdminDto): Promise<User> {
-    return this.repository.save(admin);
+  async createSuperAdmin(superAdminData: CreateSuperAdminDto): Promise<User> {
+    return this.repository.save({
+      ...superAdminData,
+      password: await bcrypt.hash(superAdminData.password, 10),
+      role: UserRole.SUPERADMIN,
+    });
+  }
+
+  async createAdmin(adminData: CreateAdminDto): Promise<User> {
+    return this.repository.save({
+      ...adminData,
+      password: await bcrypt.hash(adminData.password, 10),
+      role: UserRole.ADMIN,
+    });
+  }
+
+  async findSuperAdmin() {
+    const superAdmin = await this.repository.findOne({
+      where: { role: UserRole.SUPERADMIN },
+    });
+
+    return !!superAdmin;
   }
 
   async findAll(): Promise<User[]> {

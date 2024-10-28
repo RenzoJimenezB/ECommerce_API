@@ -3,13 +3,22 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateSuperAdminDto } from './dto/create-super-admin.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
-  createAdmin(admin: CreateAdminDto) {
-    return this.usersRepository.createAdmin(admin);
+  createSuperAdmin(superAdminData: CreateSuperAdminDto) {
+    return this.usersRepository.createSuperAdmin(superAdminData);
+  }
+
+  createAdmin(adminData: CreateAdminDto) {
+    return this.usersRepository.createAdmin(adminData);
+  }
+
+  checkIfSuperAdminExists() {
+    return this.usersRepository.findSuperAdmin();
   }
 
   findAll() {
