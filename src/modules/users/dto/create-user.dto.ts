@@ -57,6 +57,6 @@ export class CreateUserDto {
   @Length(5, 80)
   address: string;
 
-  @IsEmpty()
-  role: UserRole;
+  // @IsEmpty()
+  // role: UserRole;
 }

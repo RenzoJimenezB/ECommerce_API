@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
+import { CreateAdminDto } from './dto/create-admin.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
 
-  createAdmin(user: CreateUserDto) {
-    return this.usersRepository.createAdmin(user);
+  createAdmin(admin: CreateAdminDto) {
+    return this.usersRepository.createAdmin(admin);
   }
 
   findAll() {

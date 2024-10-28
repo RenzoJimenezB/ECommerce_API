@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateAdminDto } from './dto/create-admin.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -16,8 +17,8 @@ export class UsersRepository {
     private repository: Repository<User>,
   ) {}
 
-  async createAdmin(user: CreateUserDto): Promise<User> {
-    return this.repository.save(user);
+  async createAdmin(admin: CreateAdminDto): Promise<User> {
+    return this.repository.save(admin);
   }
 
   async findAll(): Promise<User[]> {
