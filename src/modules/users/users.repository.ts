@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { DeleteResult, EntityManager, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
@@ -28,7 +28,9 @@ export class UsersRepository {
     });
   }
 
-  async createAdmin(adminData: CreateAdminDto): Promise<User> {
+  async createAdmin(
+    adminData: Omit<CreateAdminDto, 'passwordConfirmation'>,
+  ): Promise<User> {
     return this.repository.save({
       ...adminData,
       password: await bcrypt.hash(adminData.password, 10),
@@ -36,7 +38,13 @@ export class UsersRepository {
     });
   }
 
-  async findSuperAdmin() {
+  async createUser(
+    userData: Omit<CreateUserDto, 'passwordConfirmation'>,
+  ): Promise<User> {
+    return this.repository.save(userData);
+  }
+
+  async findSuperAdmin(): Promise<boolean> {
     const superAdmin = await this.repository.findOne({
       where: { role: UserRole.SUPERADMIN },
     });
@@ -56,10 +64,6 @@ export class UsersRepository {
       relations: { orders: true },
     });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
     return user;
   }
 
@@ -67,10 +71,9 @@ export class UsersRepository {
     return this.repository.findOneBy({ email });
   }
 
-  async update(id: string, updateData: UpdateUserDto) {
-    if (Object.keys(updateData).length === 0) {
+  async update(id: string, updateData: UpdateUserDto): Promise<User> {
+    if (Object.keys(updateData).length === 0)
       throw new BadRequestException('No update data provided');
-    }
 
     await this.repository.update(id, updateData);
 
@@ -80,7 +83,12 @@ export class UsersRepository {
     return updatedUser;
   }
 
-  async delete(id: string) {
-    return `User with ID ${id} has been deleted`;
+  async delete(id: string): Promise<DeleteResult> {
+    const deleteResult = await this.repository.delete(id);
+    console.log(
+      `User with ID ${id} has been deleted: ${deleteResult.affected} record(s) affected`,
+    );
+
+    return deleteResult;
   }
 }

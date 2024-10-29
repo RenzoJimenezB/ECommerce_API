@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UsersRepository } from '../users/users.repository';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { PublicUserDto } from '../users/dto/public-user.dto';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private usersRepository: UsersRepository,
+    private jwtService: JwtService,
+  ) {}
+
+  async signUp(userData: CreateUserDto): Promise<PublicUserDto> {
+    const dbUser = await this.usersRepository.findByEmail(userData.email);
+    if (dbUser) throw new BadRequestException('Email already exists');
+
+    const { passwordConfirmation, ...filteredData } = userData;
+
+    const newUser = this.usersRepository.createUser({
+      ...filteredData,
+      password: await bcrypt.hash(userData.password, 10),
+    });
+
+    return plainToInstance(PublicUserDto, newUser);
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async signIn(email: string, password: string): Promise<object> {
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user) throw new BadRequestException('Invalid credentials');
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) throw new BadRequestException('Invalid credentials');
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    const userPayload = {
+      sub: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    console.log({ userPayload });
+
+    const token = this.jwtService.sign(userPayload);
+
+    return {
+      message: `El usuario ${user.id} ha iniciado sesión`,
+      role: userPayload.role,
+      token,
+    };
   }
 }

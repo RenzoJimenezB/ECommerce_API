@@ -9,11 +9,12 @@ import { User } from './entities/user.entity';
   controllers: [UsersController],
   imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersService, UsersRepository],
+  exports: [UsersRepository],
 })
 export class UsersModule implements OnModuleInit {
   constructor(private readonly usersService: UsersService) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     const superAdminExists = await this.usersService.checkIfSuperAdminExists();
 
     if (superAdminExists) {
@@ -23,8 +24,8 @@ export class UsersModule implements OnModuleInit {
 
     await this.usersService.createSuperAdmin({
       name: 'superadmin',
-      email: 'superadmin@mail.com',
-      password: 'supersecretpassword',
+      email: process.env.SUPERADMIN_EMAIL,
+      password: process.env.SUPERADMIN_PASSWORD,
     });
   }
 }
