@@ -24,7 +24,7 @@ export class Order {
   }
 
   @ManyToOne(() => User, (user) => user.orders)
-  @JoinColumn({ name: 'uder_id' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @OneToOne(() => OrderDetail, (orderDetail) => orderDetail.order)

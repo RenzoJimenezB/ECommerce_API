@@ -1,5 +1,13 @@
+import { Category } from 'src/modules/categories/entities/category.entity';
 import { OrderDetail } from 'src/modules/order-details/entities/order-detail.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({
   name: 'products',
@@ -17,7 +25,7 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', nullable: false })
   stock: number;
 
   @Column({
@@ -26,6 +34,10 @@ export class Product {
   })
   imgUrl: string;
 
+  @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
+
   @ManyToMany(() => OrderDetail, (orderDetail) => orderDetail.products)
-  orderDetails: OrderDetail[];
+  orderDetails: OrderDetail;
 }
