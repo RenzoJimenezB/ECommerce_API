@@ -9,7 +9,6 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Match } from 'src/decorators/match.decorator';
-import { UserRole } from 'src/modules/auth/enum/roles.enum';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -56,7 +55,4 @@ export class CreateUserDto {
   @IsString()
   @Length(5, 80)
   address: string;
-
-  // @IsEmpty()
-  // role: UserRole;
 }

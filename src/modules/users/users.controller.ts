@@ -15,13 +15,11 @@ import {
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAdminDto } from './dto/create-admin.dto';
-import { Role } from 'src/decorators/roles.decorator';
+import { Roles } from 'src/decorators/roles.decorator';
 import { UserRole } from '../auth/enum/roles.enum';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { PublicUserDto } from './dto/public-user.dto';
 import { User } from './entities/user.entity';
-import { DeleteResult } from 'typeorm';
 
 @Controller('users')
 export class UsersController {
@@ -29,13 +27,16 @@ export class UsersController {
 
   @Post('admin')
   @HttpCode(HttpStatus.CREATED)
-  @Role(UserRole.SUPERADMIN)
+  @Roles(UserRole.SUPERADMIN)
   @UseGuards(AuthGuard, RolesGuard)
   createAdmin(@Body() adminData: CreateAdminDto) {
     return this.usersService.createAdmin(adminData);
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.SUPERADMIN, UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
@@ -53,8 +54,13 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateData: UpdateUserDto,
+  ) {
+    return this.usersService.update(id, updateData);
   }
 
   @Delete(':id')

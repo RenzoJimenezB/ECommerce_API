@@ -18,7 +18,7 @@ export class PublicUserDto {
 
   address: string;
 
-  @Expose({ groups: ['superadmin'] })
+  @Expose({ groups: ['superadmin', 'admin'] })
   role: UserRole;
 
   @Transform(({ value }) => plainToInstance(PublicOrderDto, value))
