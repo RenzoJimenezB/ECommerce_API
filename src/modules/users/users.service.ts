@@ -46,12 +46,16 @@ export class UsersService {
     requestingUserRole: UserRole,
   ): Promise<PublicUserDto> {
     const user = await this.usersRepository.findById(id);
+    console.log(user);
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    if (id !== requestingUserId && requestingUserRole !== UserRole.ADMIN) {
+    if (
+      id !== requestingUserId &&
+      ![UserRole.SUPERADMIN, UserRole.ADMIN].includes(requestingUserRole)
+    ) {
       throw new ForbiddenException('You can only access your own account');
     }
 
