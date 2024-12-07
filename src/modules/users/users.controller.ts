@@ -64,14 +64,14 @@ export class UsersController {
   }
 
   @Delete(':id')
-  // @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
-  remove(
+  async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() request: Request & { user: any },
   ) {
     const requestingUserId = request.user.sub;
-    return this.usersService.remove(id, requestingUserId);
+    await this.usersService.remove(id, requestingUserId);
   }
 }

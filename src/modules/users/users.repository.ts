@@ -83,12 +83,12 @@ export class UsersRepository {
     return updatedUser;
   }
 
-  async delete(id: string): Promise<DeleteResult> {
+  async delete(id: string): Promise<void> {
     const deleteResult = await this.repository.delete(id);
     console.log(
       `User with ID ${id} has been deleted: ${deleteResult.affected} record(s) affected`,
     );
 
-    return deleteResult;
+    // return deleteResult;
   }
 }

@@ -66,13 +66,13 @@ export class UsersService {
     return this.usersRepository.update(id, updateData);
   }
 
-  async remove(id: string, requestingUserId: string): Promise<DeleteResult> {
+  async remove(id: string, requestingUserId: string): Promise<void> {
     const user = await this.usersRepository.findById(id);
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
     if (id !== requestingUserId)
       throw new ForbiddenException('You can only delete your own account');
 
-    return this.usersRepository.delete(id);
+    await this.usersRepository.delete(id);
   }
 }
