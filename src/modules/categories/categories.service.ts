@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoriesRepository } from './categories.repository';
 
 @Injectable()
-export class CategoriesService {
+export class CategoriesService implements OnModuleInit {
+  constructor(private readonly categoryRepository: CategoriesRepository) {}
+  async onModuleInit() {
+    await this.findAll;
+  }
+
   create(createCategoryDto: CreateCategoryDto) {
     return 'This action adds a new category';
   }

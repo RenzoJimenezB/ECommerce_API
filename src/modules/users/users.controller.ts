@@ -11,6 +11,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Req,
+  Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -53,7 +54,7 @@ export class UsersController {
     return this.usersService.findOne(id, requestingUserId, requestingUserRole);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   update(
