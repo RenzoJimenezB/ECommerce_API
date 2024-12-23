@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { CategoriesRepository } from '../categories/categories.repository';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
 import * as data from '../../utils/data.json';
+import { CreateProductDto } from './dto/create-product.dto';
 
 @Injectable()
 export class ProductsRepository {
@@ -41,6 +47,33 @@ export class ProductsRepository {
       .execute();
   }
 
+  async create(product: CreateProductDto) {
+    const category = await this.categoriesRepository.findById(product.category);
+
+    if (!category) {
+      throw new NotFoundException(
+        `Category with ID ${product.category} not found`,
+      );
+    }
+
+    const existingProduct = await this.repository.findOne({
+      where: { name: product.name },
+    });
+
+    if (existingProduct) {
+      throw new ConflictException(
+        `Product with name ${product.name} already exists`,
+      );
+    }
+
+    const newProduct = await this.repository.save({
+      ...product,
+      category,
+    });
+
+    return { id: newProduct.id };
+  }
+
   async findAll(page: number, limit: number): Promise<PaginatedProductsDto> {
     const skip = (page - 1) * limit;
     const take = limit;
@@ -74,5 +107,29 @@ export class ProductsRepository {
     }
 
     return product;
+  }
+
+  async update(
+    id: string,
+    updateData: Partial<Product>,
+    manager?: EntityManager,
+  ) {
+    const repository = manager
+      ? manager.getRepository(Product)
+      : this.repository;
+
+    if (Object.keys(updateData).length === 0) {
+      throw new BadRequestException('No update data provided');
+    }
+
+    await repository.update(id, updateData);
+
+    const updatedProduct = await repository.findOne({
+      where: { id },
+      relations: { category: true },
+    });
+
+    console.log(`Product with ID ${id} has been updated`);
+    return updatedProduct;
   }
 }

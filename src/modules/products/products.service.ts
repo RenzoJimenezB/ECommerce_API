@@ -1,10 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsRepository } from './products.repository';
 import { CategoriesRepository } from '../categories/categories.repository';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
 import { Product } from './entities/product.entity';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class ProductsService implements OnModuleInit {
@@ -20,8 +21,8 @@ export class ProductsService implements OnModuleInit {
     return this.productsRepository.addProducts();
   }
 
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  async create(product: CreateProductDto) {
+    return this.productsRepository.create(product);
   }
 
   async findAll(page: number, limit: number): Promise<PaginatedProductsDto> {
@@ -32,8 +33,26 @@ export class ProductsService implements OnModuleInit {
     return this.productsRepository.findOneById(id);
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: string, updateData: UpdateProductDto) {
+    let dbCategory: Category | undefined = undefined;
+
+    if (updateData.category) {
+      const category = await this.categoriesRepository.findById(
+        updateData.category,
+      );
+
+      if (!category) {
+        throw new NotFoundException(
+          `Category with ID ${updateData.category} not foun`,
+        );
+      }
+      dbCategory = category;
+    }
+
+    return this.productsRepository.update(id, {
+      ...updateData,
+      category: dbCategory,
+    });
   }
 
   remove(id: number) {
