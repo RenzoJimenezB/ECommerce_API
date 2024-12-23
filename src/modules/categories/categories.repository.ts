@@ -31,4 +31,16 @@ export class CategoriesRepository {
       await this.repository.save(newCategories);
     }
   }
+
+  async findAll(): Promise<Category[]> {
+    return this.repository.find();
+  }
+
+  async findById(id: string): Promise<Category> {
+    return this.repository.findOneBy({ id });
+  }
+
+  async findByName(name: string): Promise<Category> {
+    return this.repository.findOneBy({ name });
+  }
 }
