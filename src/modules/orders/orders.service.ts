@@ -4,7 +4,6 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrdersRepository } from './orders.repository';
 import { plainToInstance } from 'class-transformer';
 import { PublicOrderDto } from './dto/public-order.dto';
-import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class OrdersService {
