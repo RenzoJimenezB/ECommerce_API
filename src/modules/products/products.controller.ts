@@ -16,6 +16,10 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { UserRole } from '../auth/enum/roles.enum';
 
 @Controller('products')
 export class ProductsController {
@@ -23,6 +27,8 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
@@ -41,6 +47,8 @@ export class ProductsController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateData: UpdateProductDto,

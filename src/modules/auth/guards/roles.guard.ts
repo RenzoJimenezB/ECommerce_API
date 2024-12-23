@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { UserRole } from '../enum/roles.enum';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,15 +21,17 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
+    console.log(`required roles: ${requiredRoles}`);
+
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
+    console.log(`user role: ${user.role}`);
+
     const hasRole = () =>
-      requiredRoles.some((role) => user?.roles?.includes(role));
+      requiredRoles.some((role) => user?.role?.includes(role));
 
-    // const hasRole = user?.roles === requiredRole;
-
-    if (!hasRole) {
+    if (!hasRole()) {
       throw new ForbiddenException(
         'You do not have permission and are not allowed to access this route',
       );
