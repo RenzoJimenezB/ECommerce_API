@@ -16,19 +16,33 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { UserRole } from '../auth/enum/roles.enum';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  @UseGuards(AuthGuard)
+  create(@Body() order: CreateOrderDto) {
+    return this.ordersService.create(order);
   }
 
   @Get()
+  @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @UseGuards(AuthGuard, RolesGuard)
   findAll() {
     return this.ordersService.findAll();
+  }
+
+  @Get('user')
+  @UseGuards(AuthGuard)
+  findUserOrders(@Req() request: Request & { user: any }) {
+    const userId = request.user.sub;
+    return this.ordersService.findUserOrders(userId);
   }
 
   @Get(':id')

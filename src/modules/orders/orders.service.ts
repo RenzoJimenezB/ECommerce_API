@@ -20,6 +20,16 @@ export class OrdersService {
     return plainToInstance(PublicOrderDto, orders);
   }
 
+  async findUserOrders(id: string): Promise<PublicOrderDto[]> {
+    const orders = await this.ordersRepository.findByUserId(id);
+
+    if (orders.length === 0) {
+      throw new NotFoundException('User has no orders');
+    }
+
+    return plainToInstance(PublicOrderDto, orders);
+  }
+
   async findOne(orderId: string, userId: string): Promise<PublicOrderDto> {
     const order = await this.ordersRepository.findById(orderId, userId);
     return plainToInstance(PublicOrderDto, order);
