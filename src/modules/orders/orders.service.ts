@@ -1,26 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrdersRepository } from './orders.repository';
+import { plainToInstance } from 'class-transformer';
+import { PublicOrderDto } from './dto/public-order.dto';
+import { UsersRepository } from '../users/users.repository';
 
 @Injectable()
 export class OrdersService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(private ordersRepository: OrdersRepository) {}
+
+  async create(order: CreateOrderDto): Promise<PublicOrderDto> {
+    const newOrder = await this.ordersRepository.create(order);
+    return plainToInstance(PublicOrderDto, newOrder);
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  async findAll(): Promise<PublicOrderDto[]> {
+    const orders = await this.ordersRepository.findAll();
+    return plainToInstance(PublicOrderDto, orders);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async findOne(orderId: string, userId: string): Promise<PublicOrderDto> {
+    const order = await this.ordersRepository.findById(orderId, userId);
+    return plainToInstance(PublicOrderDto, order);
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
+  // update(id: number, updateOrderDto: UpdateOrderDto) {
+  //   return `This action updates a #${id} order`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} order`;
+  // }
 }
