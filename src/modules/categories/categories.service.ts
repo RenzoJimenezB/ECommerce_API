@@ -5,9 +5,13 @@ import { CategoriesRepository } from './categories.repository';
 
 @Injectable()
 export class CategoriesService implements OnModuleInit {
-  constructor(private readonly categoryRepository: CategoriesRepository) {}
+  constructor(private readonly categoriesRepository: CategoriesRepository) {}
   async onModuleInit() {
     await this.findAll;
+  }
+
+  async addCategories() {
+    return this.categoriesRepository.addCategories();
   }
 
   create(createCategoryDto: CreateCategoryDto) {

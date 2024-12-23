@@ -17,6 +17,8 @@
     "noImplicitReturns": true, //
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true,
+    "types": ["multer", "jest"]
   }
 }
