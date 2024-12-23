@@ -34,7 +34,7 @@ export class ProductsService implements OnModuleInit {
   }
 
   async update(id: string, updateData: UpdateProductDto) {
-    let dbCategory: Category | undefined = undefined;
+    let dbCategory: Category;
 
     if (updateData.category) {
       const category = await this.categoriesRepository.findById(
