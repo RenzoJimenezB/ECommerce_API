@@ -54,8 +54,4 @@ export class ProductsService implements OnModuleInit {
       category: dbCategory,
     });
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} product`;
-  }
 }
