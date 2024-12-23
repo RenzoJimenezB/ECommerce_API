@@ -11,6 +11,8 @@ import { CategoriesRepository } from '../categories/categories.repository';
 import { PaginatedProductsDto } from './dto/paginated-products.dto';
 import * as data from '../../utils/data.json';
 import { CreateProductDto } from './dto/create-product.dto';
+import { ProductIdDto } from './dto/product-id.dto';
+import { ProcessedProductsDto } from './dto/processed-products.dto';
 
 @Injectable()
 export class ProductsRepository {
@@ -131,5 +133,33 @@ export class ProductsRepository {
 
     console.log(`Product with ID ${id} has been updated`);
     return updatedProduct;
+  }
+
+  async processProducts(
+    productIds: ProductIdDto[],
+    manager: EntityManager,
+  ): Promise<ProcessedProductsDto> {
+    const products = [];
+    let totalPrice = 0;
+
+    for (const product of productIds) {
+      const orderProduct = await this.findOneById(product.id, manager);
+
+      if (!orderProduct) {
+        throw new NotFoundException(`Product with ID ${product.id} not found`);
+      }
+
+      const updatedStock = orderProduct.stock - 1;
+      await this.update(
+        orderProduct.id,
+        { stock: Math.max(updatedStock, 0) },
+        manager,
+      );
+
+      totalPrice += orderProduct.price;
+      products.push(orderProduct);
+    }
+
+    return { products, totalPrice };
   }
 }
