@@ -1,4 +1,4 @@
-import { Product } from '../entities/product.entity';
+import { Product } from "../entities/product.entity";
 
 export class PaginatedProductsDto {
   /**
@@ -7,9 +7,14 @@ export class PaginatedProductsDto {
   data: Product[];
 
   /**
+   * Number of items returned
+   */
+  itemsCount: number;
+
+  /**
    * Total number of products
    */
-  count: number;
+  totalItems: number;
 
   /**
    * Page number passed as query param

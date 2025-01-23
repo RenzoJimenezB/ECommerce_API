@@ -31,7 +31,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {
   }
 
-
   @Post("admin")
   @HttpCode(HttpStatus.CREATED)
   @Roles(UserRole.SUPERADMIN)

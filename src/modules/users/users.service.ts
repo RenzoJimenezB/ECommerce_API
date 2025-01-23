@@ -20,7 +20,6 @@ export class UsersService {
   constructor(private usersRepository: UsersRepository) {
   }
 
-
   createSuperAdmin(superAdminData: CreateSuperAdminDto): Promise<User> {
     return this.usersRepository.createSuperAdmin(superAdminData);
   }

@@ -16,7 +16,6 @@ export class UsersRepository {
   constructor(@InjectRepository(User) private repository: Repository<User>) {
   }
 
-
   async createSuperAdmin(superAdminData: CreateSuperAdminDto): Promise<User> {
     return this.repository.save({
       ...superAdminData,

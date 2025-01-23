@@ -2,30 +2,31 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
-import { EntityManager, Repository } from 'typeorm';
-import { CategoriesRepository } from '../categories/categories.repository';
-import { PaginatedProductsDto } from './dto/paginated-products.dto';
-import * as data from '../../utils/data.json';
-import { CreateProductDto } from './dto/create-product.dto';
-import { ProductIdDto } from './dto/product-id.dto';
-import { ProcessedProductsDto } from './dto/processed-products.dto';
+  NotFoundException
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Product } from "./entities/product.entity";
+import { EntityManager, Repository } from "typeorm";
+import { CategoriesRepository } from "../categories/categories.repository";
+import { PaginatedProductsDto } from "./dto/paginated-products.dto";
+import * as data from "../../utils/data.json";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { ProductIdDto } from "./dto/product-id.dto";
+import { ProcessedProductsDto } from "./dto/processed-products.dto";
 
 @Injectable()
 export class ProductsRepository {
   constructor(
     @InjectRepository(Product)
     private repository: Repository<Product>,
-    private categoriesRepository: CategoriesRepository,
-  ) {}
+    private categoriesRepository: CategoriesRepository
+  ) {
+  }
 
   async addProducts() {
     const categories = await this.categoriesRepository.findAll();
     const categoryMap = new Map(
-      categories.map((category) => [category.name, category]),
+      categories.map((category) => [category.name, category])
     );
 
     const products = data.map((element) => {
@@ -36,7 +37,7 @@ export class ProductsRepository {
         description: element.description,
         price: element.price,
         stock: element.stock,
-        category,
+        category
       };
     });
 
@@ -54,23 +55,23 @@ export class ProductsRepository {
 
     if (!category) {
       throw new NotFoundException(
-        `Category with ID ${product.category} not found`,
+        `Category with ID ${product.category} not found`
       );
     }
 
     const existingProduct = await this.repository.findOne({
-      where: { name: product.name },
+      where: { name: product.name }
     });
 
     if (existingProduct) {
       throw new ConflictException(
-        `Product with name ${product.name} already exists`,
+        `Product with name ${product.name} already exists`
       );
     }
 
     const newProduct = await this.repository.save({
       ...product,
-      category,
+      category
     });
 
     return { id: newProduct.id };
@@ -84,16 +85,17 @@ export class ProductsRepository {
     const [results, total] = await this.repository.findAndCount({
       skip,
       take,
-      relations: { category: true },
+      relations: { category: true }
     });
 
     const inStock = results.filter((product) => product.stock > 0);
 
     return {
       data: inStock,
-      count: total,
+      itemsCount: inStock.length,
+      totalItems: total,
       currentPage: page,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit)
     };
   }
 
@@ -105,7 +107,7 @@ export class ProductsRepository {
     const product = await repository.findOneBy({ id });
 
     if (!product) {
-      throw new NotFoundException('Product not found');
+      throw new NotFoundException("Product not found");
     }
 
     return product;
@@ -114,21 +116,21 @@ export class ProductsRepository {
   async update(
     id: string,
     updateData: Partial<Product>,
-    manager?: EntityManager,
+    manager?: EntityManager
   ) {
     const repository = manager
       ? manager.getRepository(Product)
       : this.repository;
 
     if (Object.keys(updateData).length === 0) {
-      throw new BadRequestException('No update data provided');
+      throw new BadRequestException("No update data provided");
     }
 
     await repository.update(id, updateData);
 
     const updatedProduct = await repository.findOne({
       where: { id },
-      relations: { category: true },
+      relations: { category: true }
     });
 
     console.log(`Product with ID ${id} has been updated`);
@@ -137,7 +139,7 @@ export class ProductsRepository {
 
   async processProducts(
     productIds: ProductIdDto[],
-    manager: EntityManager,
+    manager: EntityManager
   ): Promise<ProcessedProductsDto> {
     const products = [];
     let totalPrice = 0;
@@ -153,7 +155,7 @@ export class ProductsRepository {
       await this.update(
         orderProduct.id,
         { stock: Math.max(updatedStock, 0) },
-        manager,
+        manager
       );
 
       totalPrice += orderProduct.price;
