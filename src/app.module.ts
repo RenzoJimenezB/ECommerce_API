@@ -4,13 +4,14 @@ import { AppService } from "./app.service";
 import { UsersModule } from "./modules/users/users.module";
 import { ProductsModule } from "./modules/products/products.module";
 import { CategoriesModule } from "./modules/categories/categories.module";
+import { OrderDetailModule } from "./modules/orderDetails/orderDetails.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import typeOrmConfig from "./config/typeorm";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AuthModule } from "./modules/auth/auth.module";
 import { JwtModule } from "@nestjs/jwt";
-import { OrderDetailModule } from "./modules/orderDetails/orderDetails.module";
+
 
 @Module({
   imports: [

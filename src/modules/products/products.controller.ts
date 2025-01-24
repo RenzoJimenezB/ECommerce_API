@@ -18,7 +18,7 @@ import { AuthGuard } from "../auth/guards/auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "src/decorators/roles.decorator";
 import { UserRole } from "../auth/enum/roles.enum";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 
 
 @ApiTags("Products")
@@ -41,6 +41,18 @@ export class ProductsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    example: 1
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of products per page",
+    example: 5
+  })
   findAll(
     @Query("page") page: number = 1,
     @Query("limit") limit: number = 5) {
