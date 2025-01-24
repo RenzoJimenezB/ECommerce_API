@@ -35,7 +35,7 @@ jobs:
       # Step 5: Deploy to Server
       - name: Deploy to Server
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@34.235.117.108 << 'EOF'
+          ssh -i <(echo "$SSH_PRIVATE_KEY") -o StrictHostKeyChecking=no ec2-user@34.235.117.108 << 'EOF'
           docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
           docker stop nest-app || true
           docker rm nest-app || true
