@@ -35,7 +35,14 @@ jobs:
       # Step 5: Deploy to Server
       - name: Deploy to Server
         run: |
-          ssh -i <(echo "$SSH_PRIVATE_KEY") -o StrictHostKeyChecking=no ec2-user@34.235.117.108 << 'EOF'
+          # Save the SSH private key into a temporary file 
+          echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
+    
+          # Set the correct permissions for the private key
+          chmod 600 /tmp/id_rsa
+    
+          # Use the private key file with SSH to connect and run commands on the server
+          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@34.235.117.108 << 'EOF'
           docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
           docker stop nest-app || true
           docker rm nest-app || true
