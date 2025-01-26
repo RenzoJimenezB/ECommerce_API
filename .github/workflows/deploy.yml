@@ -37,12 +37,12 @@ jobs:
         run: |
           # Save the SSH private key into a temporary file 
           echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
-    
+          
           # Set the correct permissions for the private key
           chmod 600 /tmp/id_rsa
-    
+          
           # Use the private key file with SSH to connect and run commands on the server
-          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@50.17.83.126 << 'EOF'
+          ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
           docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
           docker stop nest-app || true
           docker rm nest-app || true
