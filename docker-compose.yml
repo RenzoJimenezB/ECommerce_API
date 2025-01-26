@@ -13,8 +13,6 @@ services:
       - .:/app
       - /app/node_modules
     command: npm run start:dev
-    environment:
-      - TZ=America/Lima
 
   db:
     image: postgres:14-alpine
