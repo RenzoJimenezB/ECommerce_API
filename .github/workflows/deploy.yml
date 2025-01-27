@@ -3,11 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main      # Production deployment
-      - staging   # Staging deployment
-
-env:
-  BRANCH_NAME: ${{ github.ref }}
+      - main  # Trigger on pushes to the main branch
 
 jobs:
   build-and-deploy:
@@ -39,68 +35,18 @@ jobs:
       # Step 5: Deploy to Server
       - name: Deploy to Server
         run: |
-          # Save the SSH private key into a temporary file
+          # Save the SSH private key into a temporary file 
           echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
           
           # Set the correct permissions for the private key
           chmod 600 /tmp/id_rsa
-
-          # Use SSH to connect and run commands on the server
+          
+          # Use the private key file with SSH to connect and run commands on the server
           ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
-            export BRANCH_NAME="${GITHUB_REF}"
-          
-          # Update and install necessary packages
-          sudo dnf update -y
-          sudo dnf install -y docker git
-
-          # Start and enable Docker
-          sudo systemctl start docker
-          sudo systemctl enable docker
-
-          # Add ec2-user to Docker group (ensure Docker commands can run without sudo)
-          sudo usermod -aG docker ec2-user
-
-          # Install Docker Compose
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-
-          # Clone the project repository if it doesn't exist, or pull the latest changes
-          if [ ! -d "ecommerce-app" ]; then
-            git clone https://github.com/RenzoJimenezB/ECommerce_API.git
-          fi
-          cd ECommerce_API
-          git pull origin main
-
-          # Conditionally create the environment file based on branch
-          if [ "${BRANCH_NAME}" == "refs/heads/main" ]; then
-            cat <<ENV > .env.production
-          POSTGRES_USER=${{ secrets.PROD_POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.PROD_POSTGRES_PASSWORD }}
-          POSTGRES_DB=${{ secrets.PROD_POSTGRES_DB }}
-          DB_HOST=${{ secrets.PROD_DB_HOST }}
-          DB_PORT=5432
-          JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
-          SUPERADMIN_EMAIL=${{ secrets.PROD_SUPERADMIN_EMAIL }}
-          SUPERADMIN_PASSWORD=${{ secrets.PROD_SUPERADMIN_PASSWORD }}
-          ENV
-          elif [ "${BRANCH_NAME}" == "refs/heads/development" ]; then
-          cat <<ENV > .env.development
-          POSTGRES_USER=${{ secrets.DEV_POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.DEV_POSTGRES_PASSWORD }}
-          POSTGRES_DB=${{ secrets.DEV_POSTGRES_DB }}
-          DB_HOST=${{ secrets.DEV_DB_HOST }}
-          DB_PORT=5432
-          JWT_SECRET=${{ secrets.DEV_JWT_SECRET }}
-          SUPERADMIN_EMAIL=${{ secrets.DEV_SUPERADMIN_EMAIL }}
-          SUPERADMIN_PASSWORD=${{ secrets.DEV_SUPERADMIN_PASSWORD }}
-          ENV
-          fi
-          
-          # Pull the latest Docker image and deploy using Docker Compose
-          docker-compose pull
-          docker-compose down || true
-          docker-compose up -d --remove-orphans
-          
+          docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
+          docker stop nest-app || true
+          docker rm nest-app || true
+          docker run -d --name nest-app -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
           EOF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
