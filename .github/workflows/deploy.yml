@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/EComerce_API:latest
 
       # Step 5: Deploy to the EC2 server
       - name: Deploy to Server
@@ -44,19 +44,35 @@ jobs:
           # SSH into EC2 instance
           ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
             # Step 6: Clone the repository if it's not already there
-            if [ ! -d "/home/ec2-user/e-commerce-api" ]; then
-              git clone https://github.com/RenzoJimenezB/ECommerce_API.git /home/ec2-user/e-commerce-api
+            if [ ! -d "/home/ec2-user/EComerce_API" ]; then
+              git clone https://github.com/RenzoJimenezB/ECommerce_API.git /home/ec2-user/ECommerce_API
             else
               cd /home/ec2-user/e-commerce-api && git pull origin main
             fi
           
             # Step 7: Navigate to the project directory
-            cd /home/ec2-user/e-commerce-api
+            cd /home/ec2-user/ECommerce_API
           
-            # Step 8: Pull the latest Docker image
-            docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
+            # Step 8: Create or copy the .env.development file
+            if [ ! -f ".env.development" ]; then
+              echo "Creating .env.development file..."
+              cat <<EOL > .env.development
+              # Environment variables
+              DB_NAME=${{ secrets.PROD_NAME }}
+              DB_HOST=${{ secrets.PROD_HOST }}
+              DB_USER=${{ secrets.PROD_USER }}
+              DB_PASSWORD=${{ secrets.PROD_PASSWORD }}
+              DB_PORT=5432
+              JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
+              SUPERADMIN_EMAIL=${{ secrets.PROD_SUPERADMIN_EMAIL }}
+              SUPERADMIN_PASSWORD=${{ secrets.PROD_SUPERADMIN_PASSWORD }}
+              EOL
+            fi
           
-            # Step 9: Run docker-compose to stop existing containers and start new ones
+            # Step 9: Pull the latest Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/EComerce_API:latest
+          
+            # Step 10: Run docker-compose to stop existing containers and start new ones
             docker-compose down || true
             docker-compose up -d
           EOF
