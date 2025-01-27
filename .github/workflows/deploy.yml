@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/EComerce_API:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
 
       # Step 5: Deploy to the EC2 server
       - name: Deploy to Server
@@ -44,7 +44,7 @@ jobs:
           # SSH into EC2 instance
           ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
             # Step 6: Clone the repository if it's not already there
-            if [ ! -d "/home/ec2-user/EComerce_API" ]; then
+            if [ ! -d "/home/ec2-user/e-commerce-api" ]; then
               git clone https://github.com/RenzoJimenezB/ECommerce_API.git /home/ec2-user/ECommerce_API
             else
               cd /home/ec2-user/e-commerce-api && git pull origin main
@@ -70,7 +70,7 @@ jobs:
             fi
           
             # Step 9: Pull the latest Docker image
-            docker pull ${{ secrets.DOCKER_USERNAME }}/EComerce_API:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
           
             # Step 10: Run docker-compose to stop existing containers and start new ones
             docker-compose down || true
