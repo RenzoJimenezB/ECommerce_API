@@ -74,6 +74,15 @@ jobs:
           
             # Step 10: Run docker-compose to stop existing containers and start new ones
             docker-compose down || true
+          
+            # Remove any container with the name nest-app if it already exists
+            docker rm -f nest-app || true
+          
+            # Start the containers using docker-compose
+            docker-compose up -d
+          
+            # Step 11: Run docker-compose to stop existing containers and start new ones
+            docker-compose down || true
             docker-compose up -d
           EOF
         env:
