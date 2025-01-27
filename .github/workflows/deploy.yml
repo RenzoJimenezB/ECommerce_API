@@ -32,21 +32,33 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
 
-      # Step 5: Deploy to Server
+      # Step 5: Deploy to the EC2 server
       - name: Deploy to Server
         run: |
-          # Save the SSH private key into a temporary file 
+          # Save the SSH private key into a temporary file
           echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
           
-          # Set the correct permissions for the private key
+          # Set the correct permissions for the private key file
           chmod 600 /tmp/id_rsa
           
-          # Use the private key file with SSH to connect and run commands on the server
+          # SSH into EC2 instance
           ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
-          docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
-          docker stop nest-app || true
-          docker rm nest-app || true
-          docker run -d --name nest-app -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
+            # Step 6: Clone the repository if it's not already there
+            if [ ! -d "/home/ec2-user/e-commerce-api" ]; then
+              git clone https://github.com/RenzoJimenezB/ECommerce_API.git /home/ec2-user/e-commerce-api
+            else
+              cd /home/ec2-user/e-commerce-api && git pull origin main
+            fi
+          
+            # Step 7: Navigate to the project directory
+            cd /home/ec2-user/e-commerce-api
+          
+            # Step 8: Pull the latest Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
+          
+            # Step 9: Run docker-compose to stop existing containers and start new ones
+            docker-compose down || true
+            docker-compose up -d
           EOF
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
