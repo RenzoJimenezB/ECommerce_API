@@ -6,6 +6,9 @@ on:
       - main      # Production deployment
       - staging   # Staging deployment
 
+env:
+  BRANCH_NAME: ${{ github.ref }}
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -44,6 +47,7 @@ jobs:
 
           # Use SSH to connect and run commands on the server
           ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@3.88.99.34 << 'EOF'
+            export BRANCH_NAME="${GITHUB_REF}"
           
           # Update and install necessary packages
           sudo dnf update -y
@@ -68,7 +72,7 @@ jobs:
           git pull origin main
 
           # Conditionally create the environment file based on branch
-          if [ "${GITHUB_REF}" == "refs/heads/main" ]; then
+          if [ "${BRANCH_NAME}" == "refs/heads/main" ]; then
             cat <<ENV > .env.production
           POSTGRES_USER=${{ secrets.PROD_POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.PROD_POSTGRES_PASSWORD }}
@@ -79,7 +83,7 @@ jobs:
           SUPERADMIN_EMAIL=${{ secrets.PROD_SUPERADMIN_EMAIL }}
           SUPERADMIN_PASSWORD=${{ secrets.PROD_SUPERADMIN_PASSWORD }}
           ENV
-          elif [ "${GITHUB_REF}" == "refs/heads/development" ]; then
+          elif [ "${BRANCH_NAME}" == "refs/heads/development" ]; then
           cat <<ENV > .env.development
           POSTGRES_USER=${{ secrets.DEV_POSTGRES_USER }}
           POSTGRES_PASSWORD=${{ secrets.DEV_POSTGRES_PASSWORD }}
@@ -98,5 +102,5 @@ jobs:
           docker-compose up -d --remove-orphans
           
           EOF
-env:
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
