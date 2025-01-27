@@ -38,7 +38,7 @@ jobs:
         run: |
           # Save the SSH private key into a temporary file
           echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
-
+          
           # Set the correct permissions for the private key
           chmod 600 /tmp/id_rsa
 
@@ -47,36 +47,27 @@ jobs:
           
           # Update and install necessary packages
           sudo dnf update -y
-          sudo dnf install -y postgresql15 postgresql15-server docker git
+          sudo dnf install -y docker git
 
-          # Initialize PostgreSQL database (if needed)
-          sudo mkdir -p /var/lib/pgsql/15/data
-          sudo chown postgres:postgres /var/lib/pgsql/15/data
-          sudo su - postgres -c "/usr/bin/initdb -D /var/lib/pgsql/15/data"
-
-          # Start and enable PostgreSQL and Docker services
-          sudo systemctl start postgresql-15
-          sudo systemctl enable postgresql-15
+          # Start and enable Docker
           sudo systemctl start docker
           sudo systemctl enable docker
 
-          # Add ec2-user to Docker group
+          # Add ec2-user to Docker group (ensure Docker commands can run without sudo)
           sudo usermod -aG docker ec2-user
 
           # Install Docker Compose
           sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-          # Ensure services are running
-          sudo systemctl status docker
-          sudo systemctl status postgresql-15
-
-          # Clone the project repository
-          git clone https://github.com/<your-repo>/ecommerce-app.git || true
+          # Clone the project repository if it doesn't exist, or pull the latest changes
+          if [ ! -d "ecommerce-app" ]; then
+            git clone https://github.com/<your-repo>/ecommerce-app.git
+          fi
           cd ecommerce-app
           git pull origin main
 
-          # Conditionally set up environment variables
+          # Conditionally create the environment file based on branch
           if [ "${GITHUB_REF}" == "refs/heads/main" ]; then
             cat <<ENV > .env.production
           POSTGRES_USER=${{ secrets.PROD_POSTGRES_USER }}
@@ -88,25 +79,24 @@ jobs:
           SUPERADMIN_EMAIL=${{ secrets.PROD_SUPERADMIN_EMAIL }}
           SUPERADMIN_PASSWORD=${{ secrets.PROD_SUPERADMIN_PASSWORD }}
           ENV
-          elif [ "${GITHUB_REF}" == "refs/heads/staging" ]; then
-          cat <<ENV > .env.staging
-          POSTGRES_USER=${{ secrets.STAGE_POSTGRES_USER }}
-          POSTGRES_PASSWORD=${{ secrets.STAGE_POSTGRES_PASSWORD }}
-          POSTGRES_DB=${{ secrets.STAGE_POSTGRES_DB }}
-          DB_HOST=${{ secrets.STAGE_DB_HOST }}
+          elif [ "${GITHUB_REF}" == "refs/heads/development" ]; then
+          cat <<ENV > .env.development
+          POSTGRES_USER=${{ secrets.DEV_POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.DEV_POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.DEV_POSTGRES_DB }}
+          DB_HOST=${{ secrets.DEV_DB_HOST }}
           DB_PORT=5432
-          JWT_SECRET=${{ secrets.STAGE_JWT_SECRET }}
-          SUPERADMIN_EMAIL=${{ secrets.STAGE_SUPERADMIN_EMAIL }}
-          SUPERADMIN_PASSWORD=${{ secrets.STAGE_SUPERADMIN_PASSWORD }}
+          JWT_SECRET=${{ secrets.DEV_JWT_SECRET }}
+          SUPERADMIN_EMAIL=${{ secrets.DEV_SUPERADMIN_EMAIL }}
+          SUPERADMIN_PASSWORD=${{ secrets.DEV_SUPERADMIN_PASSWORD }}
           ENV
           fi
           
-          # Pull the latest Docker image and restart the app
-          docker pull ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
-          docker stop nest-app || true
-          docker rm nest-app || true
-          docker run -d --name nest-app -p 3000:3000 --env-file .env.production ${{ secrets.DOCKER_USERNAME }}/e-commerce-api:latest
-
+          # Pull the latest Docker image and deploy using Docker Compose
+          docker-compose pull
+          docker-compose down || true
+          docker-compose up -d --remove-orphans
+          
           EOF
 env:
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
