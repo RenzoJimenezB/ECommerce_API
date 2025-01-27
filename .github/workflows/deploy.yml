@@ -63,8 +63,8 @@ jobs:
               DB_USER=${{ secrets.PROD_USER }}
               DB_PASSWORD=${{ secrets.PROD_PASSWORD }}
               DB_PORT=5432
-              POSTGRES_PASSWORD=${{ secrets.PROD_POSTGRES_DB}}
-              POSTGRES_PASSWORD=${{ secrets.PROD_POSTGRES_USER}}
+              POSTGRES_DB=${{ secrets.PROD_POSTGRES_DB}}
+              POSTGRES_USER=${{ secrets.PROD_POSTGRES_USER}}
               POSTGRES_PASSWORD=${{ secrets.PROD_POSTGRES_PASSWORD}}
               JWT_SECRET=${{ secrets.PROD_JWT_SECRET }}
               SUPERADMIN_EMAIL=${{ secrets.PROD_SUPERADMIN_EMAIL }}
