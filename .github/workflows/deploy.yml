@@ -62,7 +62,7 @@ jobs:
 
           # Clone the project repository if it doesn't exist, or pull the latest changes
           if [ ! -d "ecommerce-app" ]; then
-            git clone https://github.com/<your-repo>/ecommerce-app.git
+            git clone https://github.com/RenzoJimenezB/ECommerce_API.git
           fi
           cd ecommerce-app
           git pull origin main
