@@ -64,7 +64,7 @@ jobs:
           if [ ! -d "ecommerce-app" ]; then
             git clone https://github.com/RenzoJimenezB/ECommerce_API.git
           fi
-          cd ecommerce-app
+          cd ECommerce_API
           git pull origin main
 
           # Conditionally create the environment file based on branch
